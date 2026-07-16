@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends
-# from fastapi.security import OAuth2PasswordRequestForm
-from app.core.deps import get_current_user
-from app.models.user import User
 from sqlalchemy.orm import Session
 
+from app.core.deps import get_current_user
 from app.database.dependency import get_db
+from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest
 from app.services.auth_service import AuthService
 
@@ -22,8 +21,11 @@ def register(
     return AuthService.register(
         db=db,
         name=user.name,
+        phone=user.phone,
         email=user.email,
         password=user.password,
+        confirm_password=user.confirm_password,
+        referral_code=user.referral_code,
     )
 
 
@@ -38,6 +40,7 @@ def login(
         password=credentials.password,
     )
 
+
 @router.get("/me")
 def me(
     current_user: User = Depends(get_current_user),
@@ -45,8 +48,11 @@ def me(
     return {
         "id": current_user.id,
         "name": current_user.name,
+        "phone": current_user.phone,
         "email": current_user.email,
         "role": current_user.role,
         "is_active": current_user.is_active,
         "is_verified": current_user.is_verified,
+        "profile_image": current_user.profile_image,
+        "referral_code": current_user.referral_code,
     }

@@ -14,6 +14,10 @@ class UserRepository:
         return db.query(User).filter(User.email == email).first()
 
     @staticmethod
+    def get_by_phone(db: Session, phone: str):
+        return db.query(User).filter(User.phone == phone).first()
+
+    @staticmethod
     def create(db: Session, user: User):
         db.add(user)
         db.commit()
@@ -25,4 +29,3 @@ class UserRepository:
         db.commit()
         db.refresh(user)
         return user
-    

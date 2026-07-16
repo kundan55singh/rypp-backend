@@ -13,10 +13,21 @@ class AuthService:
     def register(
         db: Session,
         name: str,
+        phone: str,
         email: str,
         password: str,
+        confirm_password: str,
+        referral_code: str | None = None,
     ):
 
+        # Check if passwords match
+        if password != confirm_password:
+            raise HTTPException(
+                status_code=400,
+                detail="Passwords do not match"
+            )
+
+        # Check email already exists
         existing_user = UserRepository.get_by_email(db, email)
 
         if existing_user:
@@ -25,10 +36,22 @@ class AuthService:
                 detail="Email already registered"
             )
 
+        # Check phone already exists
+        existing_phone = UserRepository.get_by_phone(db, phone)
+
+        if existing_phone:
+            raise HTTPException(
+                status_code=400,
+                detail="Phone number already registered"
+            )
+
+        # Create new user
         user = User(
             name=name,
+            phone=phone,
             email=email,
-            hashed_password=hash_password(password)
+            hashed_password=hash_password(password),
+            referral_code=referral_code,
         )
 
         return UserRepository.create(db, user)
@@ -70,6 +93,9 @@ class AuthService:
             "user": {
                 "id": user.id,
                 "name": user.name,
+                "phone": user.phone,
                 "email": user.email,
+                "role": user.role,
+                "is_verified": user.is_verified,
             },
         }
